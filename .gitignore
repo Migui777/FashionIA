@@ -1,0 +1,24 @@
+.DS_Store
+Thumbs.db
+*.log
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Installed dependencies and generated output
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+coverage/
+**/coverage/
+
+# Local development certificates and files
+.certs/
+**/.certs/
+*.local

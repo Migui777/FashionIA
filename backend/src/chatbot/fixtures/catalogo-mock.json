@@ -1,0 +1,54 @@
+{
+  "document": "catalogo-mock.json",
+  "notice": "Datos ficticios para el mockup. No representan el catálogo real de Modas.",
+  "records": [
+    {
+      "id": "VST-001",
+      "name": "Vestido Aurora de Jardín",
+      "type": "vestido",
+      "creator": "Elena Mar de Luz",
+      "materials": ["algodón orgánico", "tul de poliéster reciclado", "bordado de hilo de seda"],
+      "inspiration": "Jardines al amanecer y el movimiento de las flores con la brisa"
+    },
+    {
+      "id": "VST-002",
+      "name": "Vestido Eclipse de Cobre",
+      "type": "vestido",
+      "creator": "Taller Nube Roja",
+      "materials": ["lino", "satén de viscosa", "apliques de cobre envejecido"],
+      "inspiration": "El contraste entre un eclipse y los tonos cálidos de una puesta de sol"
+    },
+    {
+      "id": "VST-003",
+      "name": "Vestido Marea Serena",
+      "type": "vestido",
+      "creator": "Inés Valverde",
+      "materials": ["crepé de lyocell", "encaje de algodón"],
+      "inspiration": null
+    },
+    {
+      "id": "TRA-001",
+      "name": "Traje Bruma Andina",
+      "type": "traje",
+      "creator": "Casa Ladera",
+      "materials": ["lana fría", "forro de cupro", "botones de corozo"],
+      "inspiration": "Las siluetas de las montañas cubiertas por neblina"
+    },
+    {
+      "id": "TRA-002",
+      "name": "Traje Jardín Nocturno",
+      "type": "traje",
+      "creator": "Mateo del Río",
+      "materials": ["terciopelo de algodón", "seda", "botones metálicos reciclados"],
+      "inspiration": "Plantas y flores que se revelan bajo la luz de la noche"
+    },
+    {
+      "id": "TRA-003",
+      "name": "Traje Horizonte Claro",
+      "type": "traje",
+      "creator": "Colectivo Prisma",
+      "materials": ["mezcla de lino y algodón", "forro de viscosa"],
+      "inspiration": "La arquitectura costera y las líneas del horizonte"
+    }
+  ]
+}

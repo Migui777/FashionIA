@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AREffectType {
+  particles
+  glow
+  floating_text
+  model_3d
+  frame
+}
+
+model Dress {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  designer    String?
+  collection  String?
+  category    String?
+  color       String?
+  materials   String?
+  imageUrl    String?
+  model3dUrl  String?
+
+  arEffectType      AREffectType @default(glow)
+  arEffectAssetUrl  String?
+  arEffectIntensity Float        @default(0.6)
+
+  story     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0b0b12" />
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#d4af7a" stroke-width="4" opacity="0.5" />
+  <text
+    x="50%"
+    y="54%"
+    text-anchor="middle"
+    font-family="Georgia, 'Cormorant Garamond', serif"
+    font-size="240"
+    fill="#d4af7a"
+  >F</text>
+</svg>
