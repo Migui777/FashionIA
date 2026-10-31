@@ -5,7 +5,18 @@ de su celular hacia la pasarela, la app "detecta" un vestido (modo demo) y
 muestra un efecto de AR junto con información del diseño; también puede
 preguntarle a un chat sobre esa prenda.
 
-> **Estado de esta entrega:** el módulo priorizado y la pantalla frontend actualmente conectada son el chatbot. El repositorio también contiene vistas y componentes de cámara/AR cuya integración completa con el chatbot está pendiente. Consulta la [guía de presentación del proyecto](docs/presentacion-proyecto.md) para ver el estado real, los flujos, el alcance actual y la siguiente etapa.
+> **Estado de esta entrega (fase 3):** el frontend tiene un **Home con cámara simulada** (`/`) y el **chat rediseñado** (`/chat`), conectados entre sí: un botón flotante abre el chat en cualquier momento y, si la simulación "detecta" una prenda, el botón "Ver más información…" abre el chat con esa prenda como contexto. El chat responde **en vivo** (streaming) y su catálogo incluye materiales, colores, estilo y temporada. La cámara real y el reconocimiento visual siguen pendientes para una integración futura con otro equipo. Consulta la [guía de presentación del proyecto](docs/presentacion-proyecto.md) y el [informe de progreso](docs/informe-progreso.md) para ver el estado real, los flujos, el alcance actual y la siguiente etapa.
+
+## Equipo y responsabilidades
+
+| Fase | Rol | Integrante |
+|---|---|---|
+| Fase 1 (MVP del chatbot) | PM | Michael Zuleta |
+| Fase 1 | Backend | Dario Borja |
+| Fase 1 | Frontend | Juan Henao |
+| **Fase 3 (Home simulado, chat rediseñado, respuesta en vivo)** | PM: lista de actividades en Trello, división de responsabilidades y autor del mockup actualizado de la interfaz | Miguel Ángel Muñoz Sosa |
+| Fase 3 | Backend | Brayan Rojas |
+| Fase 3 | Frontend | Wudeison Tovar |
 
 Proyecto universitario — MVP simple, sin autenticación, sin infraestructura
 extra, con catálogo de prueba predeterminado y proveedores intercambiables.
@@ -83,6 +94,8 @@ Se mantiene un modelo de datos pequeño. Inicialmente la entidad principal es
 | `model3dUrl` | URL del modelo 3D (GLTF/GLB) |
 | `arEffect` | Efecto de AR asociado |
 | `story` | Historia detrás del diseño |
+| `style` | Estilo de la prenda (por ejemplo, "Romántico y etéreo") |
+| `season` | Temporada (por ejemplo, "Primavera-verano") |
 | `createdAt` | Fecha de creación |
 | `updatedAt` | Fecha de última actualización |
 
@@ -91,7 +104,9 @@ No todos los campos son obligatorios.
 ### IA y reconocimiento
 
 - **Chatbot v1:** `POST /api/v1/chat` usa el catálogo mock por defecto y
-  respuestas deterministas. `CHATBOT_SOURCE=db` permite consultar los vestidos
+  respuestas deterministas sobre materiales, colores, estilo, temporada,
+  creador e inspiración. `POST /api/v1/chat/stream` entrega la misma respuesta
+  en vivo (SSE) y es el que usa el chat de la app. `CHATBOT_SOURCE=db` permite consultar los vestidos
   de PostgreSQL. Gemini es opcional y solo redacta respuestas a partir de los
   datos recuperados; si falla, se conserva la respuesta determinista. Consulta
   la [documentación del chatbot](backend/docs/chatbot-contract-v0.1.md).
@@ -351,6 +366,19 @@ pidiendo confirmar la IP antes de continuar. Para una presentación
 importante, el certificado local (arriba) es más confiable.
 
 ## Modo demo
+
+**Home simulado (`/`):** muestra un visor de cámara animado que no pide la
+cámara real. Cada pocos segundos "detecta" una de las prendas de demostración
+(`frontend/src/features/augmented-reality/demoGarments.ts`, iguales al catálogo
+mock del chatbot) y muestra una breve descripción con el botón **"Ver más
+información…"**, que abre el chat (`/chat`) con esa prenda. El botón flotante 💬
+abre el chat sin contexto en cualquier momento. No necesita PostgreSQL. Esta
+simulación se reemplazará por el reconocimiento real en una fase posterior.
+
+**Chat (`/chat`):** respuesta escrita en vivo, emojis, insignia de estado,
+tarjeta de la prenda con su fuente y sugerencias para seguir explorando
+(campos aún no consultados y otra prenda del catálogo). Las sugerencias se
+calculan en el frontend con `chatSuggestions.ts`; el backend no las devuelve.
 
 Con `VITE_DEMO_MODE=true` (valor por defecto en `.env.example`), la app no
 depende de ningún modelo de IA real ni de conexión a internet estable: tras

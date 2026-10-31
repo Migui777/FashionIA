@@ -5,9 +5,9 @@
 
 ## 1. Resumen ejecutivo
 
-Fashion-IA es un prototipo para acercar al público a los diseños de una colección de moda mediante una experiencia web. El módulo priorizado para esta entrega es el **chatbot**, que permite preguntar por prendas y responde con información respaldada por el catálogo disponible.
+Fashion-IA es un prototipo para acercar al público a los diseños de una colección de moda mediante una experiencia web. El módulo priorizado es el **chatbot**, que permite preguntar por prendas y responde con información respaldada por el catálogo disponible. En la fase 3 se agregó un **Home con cámara simulada** conectado al chat, un chat rediseñado con respuesta en vivo y un catálogo con colores, estilo y temporada.
 
-El chatbot funciona hoy con un catálogo de prueba y una interfaz web propia. El backend también contempla consultar los vestidos guardados en PostgreSQL. Gemini es opcional: puede ayudar a redactar respuestas, pero no es la fuente de los datos ni decide qué información es válida.
+El chatbot funciona hoy con un catálogo de prueba y una interfaz web propia (Home simulado y chat). El backend también contempla consultar los vestidos guardados en PostgreSQL. Gemini es opcional: puede ayudar a redactar respuestas, pero no es la fuente de los datos ni decide qué información es válida.
 
 ### Idea central
 
@@ -15,7 +15,7 @@ El chatbot funciona hoy con un catálogo de prueba y una interfaz web propia. El
 
 ## 2. Equipo y responsabilidades
 
-### Equipo que desarrolló el MVP documentado
+### Fase 1 — MVP del chatbot
 
 | Responsabilidad | Integrante |
 |---|---|
@@ -23,26 +23,28 @@ El chatbot funciona hoy con un catálogo de prueba y una interfaz web propia. El
 | Backend | **Dario Borja** |
 | Frontend | **Juan Henao** |
 
-### Integrantes incorporados
+### Fase 3 — Home simulado, chat rediseñado y respuesta en vivo
 
-| Integrante | Rol / identificación reportada |
+| Responsabilidad | Integrante |
 |---|---|
-| **Miguel Ángel Muñoz Sosa** | PM · 202110078 |
-| **Deison Tovar Cruz** | Frontend |
-| **Brayan Stiven Rojas Fernández** | Integrante; rol no especificado |
+| Product Manager (PM) | **Miguel Ángel Muñoz Sosa**: lista de actividades, división de responsabilidades y autor del mockup actualizado de la interfaz |
+| Backend | **Brayan Rojas**: catálogo con colores, estilo y temporada, y endpoint de respuesta en vivo |
+| Frontend | **Wudeison Tovar**: Home con cámara simulada, botón flotante y chat rediseñado |
 
-Su participación documentada hasta la fecha fue una sesión de **2 horas** de
-socialización del estado del proyecto: alcance actual, ideas, metas y
-tecnologías utilizadas. Esta sesión fue explicativa; no se atribuyen a estas
-personas tareas de desarrollo, entregables ni horas adicionales.
+Los tres integrantes se incorporaron el 22 de octubre de 2026 con una sesión de
+**2 horas** de socialización del proyecto. El trabajo de la fase 2 se registra
+en el [informe de progreso](./informe-progreso.md).
 
 ## 3. Alcance del producto y estado actual
 
-El repositorio reúne el prototipo Fashion AR y el módulo conversacional. **La pantalla de inicio que está conectada actualmente en el frontend de esta entrega es el chatbot**. En el código también existen pantallas y componentes para pasarela, cámara, escaneo y detalle del vestido; conectarlos en una única navegación de principio a fin es trabajo de integración pendiente.
+El repositorio reúne el prototipo Fashion AR y el módulo conversacional. **El frontend actual tiene dos pantallas conectadas: el Home con cámara simulada (`/`) y el chat (`/chat`)**. En el código también existen pantallas y componentes de pasarela con cámara real, escaneo y detalle del vestido (`/runway`, `/dresses/:id`), que aún no se enlazan desde el Home; el reconocimiento visual real sigue pendiente.
 
 | Capacidad | Estado |
 |---|---|
-| Interfaz web para conversar con el chatbot | Implementada |
+| Home con cámara simulada, botón flotante y tarjeta de prenda detectada | Implementado (simulación; no usa la cámara real) |
+| Interfaz web para conversar con el chatbot (rediseñada) | Implementada |
+| Respuesta en vivo (streaming) y sugerencias para seguir explorando | Implementadas |
+| Catálogo con materiales, colores, estilo y temporada | Implementado en mock y en PostgreSQL (requiere la migración) |
 | API `POST /api/v1/chat` | Implementada |
 | Catálogo ficticio para demo, sin base de datos | Implementado y usado por defecto |
 | Consulta de prendas desde PostgreSQL | Implementada como fuente opcional; requiere configurar y cargar la base de datos |
@@ -50,24 +52,27 @@ El repositorio reúne el prototipo Fashion AR y el módulo conversacional. **La 
 | Respuestas deterministas cuando Gemini no se usa o falla | Implementadas |
 | Lectura de un documento externo como fuente de conocimiento | Pendiente |
 | Sesiones e historial conversacional persistente | Pendiente; `sessionId` se valida, pero no se almacena ni se usa para memoria |
-| Flujo integrado cámara → prenda reconocida → chatbot contextual | Pendiente de integración |
+| Simulación de prenda detectada → chat con esa prenda como contexto | Implementada |
+| Flujo con cámara real y reconocimiento visual → chatbot contextual | Pendiente |
 
 ## 4. Flujo de uso del chatbot
 
-1. La persona escribe una pregunta en la interfaz.
-2. El frontend la envía como JSON al backend.
+0. Desde el Home, la persona abre el chat con el botón flotante (sin contexto) o con "Ver más información…" sobre una prenda detectada en la simulación (con esa prenda como contexto).
+1. La persona escribe una pregunta o toca una sugerencia.
+2. El frontend la envía como JSON a `POST /api/v1/chat/stream`.
 3. El backend valida la solicitud y carga el catálogo configurado.
 4. El manejador busca una prenda y el dato solicitado.
 5. Si hay evidencia, construye respuesta, prenda y fuentes. Si no la hay, informa `no_evidence`; si la pregunta no corresponde al catálogo, informa `out_of_scope`.
 6. Gemini puede mejorar la redacción cuando está configurado. Si falla, se conserva la respuesta determinista.
-7. El frontend muestra la respuesta y, si fue identificada, una ficha de la prenda.
+7. El frontend muestra la respuesta mientras llega y, al terminar, la ficha de la prenda, la fuente y nuevas sugerencias para seguir explorando.
 
 ```mermaid
 flowchart TD
-    U[Persona escribe una pregunta] --> UI[Interfaz React del chatbot]
-    UI --> S[chatService]
+    HOME[Home con cámara simulada] -->|botón flotante o Ver más información| UI
+    U[Persona escribe una pregunta o toca una sugerencia] --> UI[Chat React]
+    UI --> S[chatService: streamChatMessage]
     S --> P[Proxy de Vite /api]
-    P --> API[Express: POST /api/v1/chat]
+    P --> API[Express: POST /api/v1/chat/stream]
     API --> V[Validar método, JSON, tamaño y pregunta]
     V --> C{Fuente del catálogo}
     C -->|mock| M[Fixtures de prueba]
@@ -80,7 +85,7 @@ flowchart TD
     A --> G{Gemini configurado}
     G -->|Sí| GR[Redactar usando solo datos verificados]
     G -->|No o error| DET[Conservar respuesta determinista]
-    GR --> OUT[Respuesta contractual JSON]
+    GR --> OUT[Eventos SSE: meta, delta y done]
     DET --> OUT
     NE --> OUT
     OUT --> UI
@@ -91,14 +96,16 @@ flowchart TD
 ```mermaid
 flowchart LR
     subgraph Frontend["Frontend — React + Vite"]
-        CHAT[Interfaz del chatbot]
+        HOMEP[Home con cámara simulada]
+        CHAT[Chat con respuesta en vivo]
         SERVICE[Servicio HTTP del chat]
         AR[Componentes de cámara y pasarela existentes]
+        HOMEP --> CHAT
         CHAT --> SERVICE
     end
 
     subgraph Backend["Backend — Node.js + Express"]
-        ROUTE[Ruta versionada del chatbot]
+        ROUTE[Ruta versionada del chatbot y /stream]
         HANDLER[Lógica de catálogo y contrato]
         LOADER[Cargador de catálogo]
         WRITER[Redactor Gemini opcional]
@@ -110,8 +117,8 @@ flowchart LR
     MOCK[Fixtures JSON] --> LOADER
     PRISMA[Prisma ORM] --> PG[(PostgreSQL)]
     PG --> LOADER
-    SERVICE -->|HTTP JSON /api/v1/chat| ROUTE
-    AR -. integración conversacional pendiente .-> CHAT
+    SERVICE -->|HTTP JSON + SSE /api/v1/chat/stream| ROUTE
+    AR -. reconocimiento real pendiente .-> HOMEP
 ```
 
     Los diagramas Entidad-Relación, casos de uso y máquina de estados están
@@ -121,12 +128,16 @@ flowchart LR
 
 | Componente | Responsabilidad |
 |---|---|
-| `frontend/src/App.tsx` | Interfaz conversacional activa: historial de la sesión en pantalla, campo de pregunta, estado de carga y ficha de vestido |
-| `frontend/src/services/chatService.ts` | Envía la pregunta y procesa errores HTTP |
+| `frontend/src/App.tsx` | Rutas: `/` Home, `/chat` chat, `/runway` y `/dresses/:id` existentes |
+| `frontend/src/pages/HomePage.tsx` | Home con cámara simulada, detección de prendas de demostración y botón flotante al chat |
+| `frontend/src/pages/ChatPage.tsx` | Chat: respuesta en vivo, insignias, ficha de prenda, fuente y sugerencias |
+| `frontend/src/features/chat/chatSuggestions.ts` | Sugerencias iniciales y de seguimiento, calculadas en el frontend |
+| `frontend/src/services/chatService.ts` | Envía la pregunta (JSON o stream SSE) y procesa errores HTTP |
 | `backend/src/routes/chatV1.routes.ts` | Endpoint, validación HTTP, límite de solicitudes y formato de errores |
 | `backend/src/chatbot/handler.ts` | Identifica prendas/campos y produce respuestas deterministas |
 | `backend/src/chatbot/catalog.ts` | Carga los fixtures o adapta registros de PostgreSQL al contrato |
 | `backend/src/chatbot/aiAnswer.ts` | Integración opcional con Gemini y fallback determinista |
+| `backend/src/chatbot/stream.ts` | Respuesta en vivo con Gemini sobre el catálogo completo, con fallback determinista |
 | `backend/prisma/schema.prisma` | Modelo de datos de las prendas |
 | `frontend/src/pages/` y `frontend/src/features/` | Vistas y componentes de pasarela, cámara, AR, vestidos y chat contextual disponibles en el repositorio |
 
@@ -150,7 +161,9 @@ flowchart LR
 
 ### Puede hacer
 
-- Responder preguntas de catálogo sobre materiales, creador e inspiración.
+- Responder preguntas de catálogo sobre materiales, colores, estilo, temporada, creador e inspiración.
+- Con Gemini activo, responder preguntas abiertas sobre el catálogo ("¿qué me recomiendas para el verano?", "¿qué prendas son verdes?") usando solo sus datos.
+- Escribir la respuesta en vivo y proponer qué explorar después.
 - Encontrar una prenda mediante su nombre completo, nombre sin tipo o alias no ambiguo.
 - Responder preguntas generales sobre una prenda identificada usando los campos disponibles.
 - Informar cuando falta un dato (`no_evidence`) o la consulta es ajena al catálogo (`out_of_scope`).
@@ -162,14 +175,15 @@ flowchart LR
 
 - Leer automáticamente PDF, Word, páginas web u otros documentos de referencia.
 - Responder de forma fiable sobre datos que no estén en el catálogo conectado.
-- Reconocer una prenda real a partir de una imagen o video; la detección actual es simulada.
+- Reconocer una prenda real a partir de una imagen o video; la detección del Home es una simulación con prendas de demostración.
+- Responder preguntas abiertas sin Gemini: las reglas deterministas cubren una prenda y un campo por pregunta.
 - Mantener memoria entre mensajes o usuarios; el historial visible es local a la interfaz.
 - Resolver preguntas generales ajenas a las prendas.
 - Identificar páginas o párrafos de una fuente documental externa; `sources` identifica el registro y los campos usados.
 
 ## 8. Contrato de la API
 
-**Ruta:** `POST /api/v1/chat`  
+**Rutas:** `POST /api/v1/chat` (respuesta JSON) y `POST /api/v1/chat/stream` (la misma solicitud, respuesta en vivo como eventos SSE `meta`, `delta` y `done`)  
 **Contenido:** `application/json`
 
 ### Solicitud
@@ -195,7 +209,10 @@ flowchart LR
     "type": "vestido",
     "creator": "Nombre del creador",
     "materials": ["material registrado"],
-    "inspiration": "Inspiración registrada"
+    "inspiration": "Inspiración registrada",
+    "colors": ["color registrado"],
+    "style": "Estilo registrado",
+    "season": "Temporada registrada"
   },
   "sources": [
     {
@@ -295,9 +312,10 @@ La cámara, si se presenta desde un celular, requiere HTTPS o `localhost` y perm
 
 ## 12. Pruebas y documentación técnica
 
-Durante la validación del proyecto se aprobaron **48 pruebas backend en 7 suites** y **12 pruebas frontend en 4 archivos**.
+Tras la fase 2 se aprobaron **58 pruebas backend en 8 suites** y **29 pruebas frontend en 8 archivos**. La validación de la fase 1 había sido de 48 y 12 pruebas.
 
 - [Informe de progreso con métricas y tareas](./informe-progreso.md)
+- [Diagramas del proyecto](./diagramas-proyecto.md)
 - [Contrato del chatbot](../backend/docs/chatbot-contract-v0.1.md)
 - [Documentación del backend del chatbot](../backend/docs/chatbot-backend-pm.md)
 - [README e instalación general](../README.md)

@@ -1,8 +1,10 @@
 # Documentación del backend del chatbot (PM)
 
+> **Fase 3:** backend a cargo de Brayan Rojas; frontend, Wudeison Tovar; PM, Miguel Ángel Muñoz Sosa (lista de actividades, división de responsabilidades y mockup actualizado de la interfaz). Esta versión incluye colores, estilo y temporada en el catálogo y la respuesta en vivo (`POST /api/v1/chat/stream`).
+
 ## 1) Objetivo
 
-El chatbot del backend forma parte del MVP de Fashion AR y está pensado para responder preguntas sobre los vestidos y trajes del catálogo de la app. Su propósito es ayudar al usuario a conocer propiedades clave de una prenda, como materiales, creador e inspiración, sin requerir que el frontend haga lógica de negocio ni de enrutado.
+El chatbot del backend forma parte del MVP de Fashion AR y está pensado para responder preguntas sobre los vestidos y trajes del catálogo de la app. Su propósito es ayudar al usuario a conocer propiedades clave de una prenda, como materiales, colores, estilo, temporada, creador e inspiración, sin requerir que el frontend haga lógica de negocio ni de enrutado.
 
 La implementación actual está preparada para:
 
@@ -17,7 +19,8 @@ La implementación actual está preparada para:
 ### Casos que cubre
 
 - Búsqueda de una prenda por nombre o alias.
-- Detección del campo que el usuario pregunta (`materials`, `creator`, `inspiration`).
+- Detección del campo que el usuario pregunta (`materials`, `creator`, `inspiration`, `colors`, `style`, `season`).
+- Respuesta en vivo (streaming) y, con Gemini, preguntas abiertas sobre el catálogo completo.
 - Respuesta directa cuando existe evidencia en la fuente.
 - Respuesta de “no evidence” cuando la prenda existe pero el dato no está disponible.
 - Respuesta “out of scope” para preguntas ajenas al catálogo.
@@ -156,6 +159,9 @@ Se busca primero la palabra clave más temprana dentro de la pregunta, por ejemp
 - `material`, `tela`, `hecho`, `confección` → `materials`
 - `creador`, `diseñador`, `autor`, `quién` → `creator`
 - `inspir` → `inspiration`
+- `color`, `tono`, `paleta` → `colors`
+- `estilo`, `tendencia`, `silueta`, `look`, `ocasión` → `style`
+- `temporada`, `estación`, `verano`, `invierno`, `otoño`, `primavera` → `season`
 
 ## 7) Fuente de datos y catálogo
 
@@ -172,6 +178,8 @@ Se hace una conversión del modelo de la app a la estructura del contrato del ch
 - `designer` → `creator`
 - `materials` en texto → array de materiales
 - `story` → `inspiration`
+- `color` → `colors` (lista)
+- `style` y `season` pasan sin cambios (columnas nuevas, migración `add_style_season`)
 - `name` se completa con el tipo (`Vestido ...`, `Traje ...`)
 
 Esto garantiza una capa de compatibilidad entre el dominio real de la aplicación y el contrato del chatbot.
@@ -199,6 +207,10 @@ Esto asegura que:
 - la UX no se rompe,
 - el comportamiento queda consistente,
 - se evita inventar información.
+
+### Respuesta en vivo
+
+`POST /api/v1/chat/stream` recibe la misma solicitud y devuelve eventos SSE (`meta`, `delta`, `done`). El análisis determinista sigue decidiendo el estado; Gemini solo redacta, con el catálogo completo como contexto y la instrucción de responder `SIN_EVIDENCIA` cuando no alcance. Sin Gemini, o si falla, se entrega la respuesta determinista. El detalle del formato está en el [contrato](./chatbot-contract-v0.1.md).
 
 ## 9) Seguridad y operación
 
@@ -234,6 +246,7 @@ backend/src/chatbot/
 ├── handler.ts
 ├── catalog.ts
 ├── aiAnswer.ts
+├── stream.ts
 ├── fixtures/
 │   └── catalogo-mock.json
 └── ...
@@ -245,6 +258,7 @@ Los archivos más relevantes son:
 - `handler.ts`: lógica de detección e interpretación del request
 - `catalog.ts`: carga mock o desde la base de datos
 - `aiAnswer.ts`: integración con Gemini y fallback
+- `stream.ts`: respuesta en vivo con Gemini sobre el catálogo completo y fallback
 - `routes/chatV1.routes.ts`: endpoint HTTP y manejo de errors del contrato
 
 ## 11) Consideraciones para PM
@@ -263,6 +277,8 @@ Los archivos más relevantes son:
 - decidir si la IA se habilita solo en entorno de demo o también en producción,
 - revisar el manejo de rate limiting en un entorno multiinstancia,
 - evaluar si la respuesta del chatbot debe incluir más metadatos de contexto o trazabilidad,
+- cargar los datos reales (con colores, estilo y temporada) en PostgreSQL y validar `meta.mock: false`,
+- validar la respuesta en vivo con una `GEMINI_API_KEY` real (hasta ahora solo se probó con redactores simulados),
 - ampliar la cobertura del catálogo o introducir más campos de prenda.
 
 ## 12) Riesgos y límites actuales

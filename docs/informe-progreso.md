@@ -1,6 +1,7 @@
 # Informe de progreso | Fashion-IA — Chatbot de moda
 
-**Fecha de corte:** 17 de octubre de 2026  
+**Fecha de corte (fase 1):** 17 de octubre de 2026  
+**Actualización de la fase 3:** 30 de octubre de 2026 (ver sección 1.1)  
 **Producto:** Fashion-IA / Fashion AR Runway  
 **Módulo evaluado:** Chatbot de catálogo  
 **Equipo de desarrollo del período informado:** PM Michael Zuleta · Backend Dario Borja · Frontend Juan Henao
@@ -14,6 +15,56 @@
 El módulo de chatbot cuenta con una interfaz web funcional conectada a un endpoint REST versionado. Puede contestar preguntas sobre un catálogo ficticio, identificar campos y prendas por texto, devolver referencias a los registros usados y manejar falta de evidencia y preguntas fuera de alcance. El catálogo PostgreSQL y la redacción opcional con Gemini están soportados en el código, pero dependen de configuración y no deben confundirse con una ingesta documental ya implementada.
 
 La respuesta es determinista por defecto. Gemini puede redactar con datos recuperados, pero no sustituye la fuente de verdad y el backend conserva la respuesta base si la redacción falla.
+
+### 1.1 Actualización de la fase 3 (30 de octubre de 2026)
+
+La fase 3 mejora la interfaz y amplía el conocimiento del chatbot. El Home con
+cámara simulada, el chat rediseñado, la respuesta en vivo y el catálogo con
+colores, estilo y temporada ya están implementados y probados con el catálogo mock.
+
+**Equipo y responsabilidades**
+
+| Rol | Integrante | Responsabilidad en la fase 3 |
+|---|---|---|
+| PM | Miguel Ángel Muñoz Sosa | Lista de actividades, división de responsabilidades y autor del mockup actualizado de la interfaz (paleta y diseño del chat) |
+| Backend | Brayan Rojas | Campos de colores, estilo y temporada; respuesta en vivo (`POST /api/v1/chat/stream`); Gemini sobre el catálogo completo; migración de PostgreSQL |
+| Frontend | Wudeison Tovar | Home con cámara simulada, botón flotante, tarjeta de prenda detectada, chat rediseñado, sugerencias, emojis y animaciones |
+
+**Lista de actividades de la fase 2**
+
+| Actividad | Responsable | Estado |
+|---|---|---|
+| Home con cámara simulada (sin cámara real) | Frontend | Hecho |
+| Botón flotante al chat, disponible en cualquier momento | Frontend | Hecho |
+| Tarjeta de prenda detectada con "Ver más información…" que abre el chat con esa prenda | Frontend | Hecho |
+| Chat rediseñado según el mockup actualizado, respetando su paleta | Frontend / PM (mockup) | Hecho |
+| Sugerencias para seguir explorando después de cada respuesta, con emojis y animaciones | Frontend | Hecho |
+| Catálogo con materiales, estilo, temporada y colores (mock, PostgreSQL y seed) | Backend | Hecho; la migración debe aplicarse con `npx prisma migrate dev` |
+| Respuesta en vivo: `POST /api/v1/chat/stream` (SSE) | Backend | Hecho |
+| Respuestas abiertas con Gemini usando solo el catálogo | Backend | Hecho en código; sin validar contra Gemini real (requiere `GEMINI_API_KEY`) |
+| Pruebas automatizadas de lo nuevo | Backend / Frontend | Hecho |
+| Cámara real y reconocimiento visual de prendas | Por definir | Pendiente |
+| Documento oficial y datos reales en PostgreSQL | PM / Backend | Pendiente |
+
+**Validación técnica de la fase 2**
+
+| Comprobación | Resultado |
+|---|---|
+| Pruebas backend | 58/58 aprobadas en 8 suites |
+| Pruebas frontend | 29/29 aprobadas en 8 archivos |
+| Build de producción frontend | Aprobado |
+| Linter frontend | Una advertencia previa (`react(set-state-in-effect)` en `DressDetailPage`), sin errores |
+| Prueba local con el backend en modo mock | Home → "Ver más información…" → chat → pregunta respondida con el catálogo mock |
+
+No se validó la migración contra una instancia de PostgreSQL ni la redacción
+con Gemini real. Sin Gemini, las preguntas abiertas sobre el catálogo completo
+responden `no_evidence`; las reglas deterministas cubren una prenda y un campo
+por pregunta.
+
+**Cambios respecto a los pendientes de la fase 1:** la simulación de prenda
+detectada ya abre el chat con contexto. El flujo con cámara real y
+reconocimiento visual, la ingesta del documento oficial y la persistencia de
+sesiones siguen pendientes.
 
 ## 2. KPIs y capacidad planificada para una semana de trabajo
 
@@ -119,7 +170,7 @@ Los responsables se muestran por **función del equipo** y según la distribuci�
 | **PM — Michael Zuleta** | En curso | Definición y priorización del módulo; documentación de alcance y siguiente etapa preparada. Trello revisado; se actualizaron estados y comentarios de avance, con las tareas dependientes de la fuente real mantenidas abiertas. |
 | **Backend — Dario Borja** | Funcional para demo | Contrato `POST /api/v1/chat`, validación, carga de catálogo mock y DB opcional, lógica determinista, estados de negocio, referencias de fuente, límites y fallback de Gemini. Tests automatizados aprobados. |
 | **Frontend — Juan Henao** | Funcional para demo | Interfaz conversacional, envío de preguntas, indicador de carga, respuesta y ficha de prenda conectados al endpoint. Flujo conversacional validado manualmente. |
-| **Integración AR y chatbot** | Pendiente | En el repositorio hay componentes de pasarela/cámara, pero no está completado el paso automático de la prenda detectada al chat de esta entrega. |
+| **Integración AR y chatbot** | Parcial (fase 2) | La simulación del Home abre el chat con la prenda "detectada". El paso desde la cámara real y el reconocimiento visual siguen pendientes. |
 | **Conocimiento documental** | Pendiente | No se ha conectado el documento de referencia ni implementado extracción, indexación o recuperación de fragmentos. |
 
 

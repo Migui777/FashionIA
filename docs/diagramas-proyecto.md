@@ -1,7 +1,7 @@
 # Diagramas del proyecto Fashion-IA
 
-Este documento reúne los diagramas Entidad-Relación, casos de uso y máquina
-de estados del proyecto. Los diagramas reflejan el modelo de datos y el flujo
+Este documento reúne los diagramas Entidad-Relación, casos de uso, navegación
+y máquina de estados del proyecto. Los diagramas reflejan el modelo de datos y el flujo
 actual del chatbot.
 
 ## 1. Diagrama Entidad-Relación
@@ -27,6 +27,8 @@ erDiagram
         string arEffectAssetUrl "opcional"
         float arEffectIntensity
         string story "opcional"
+        string style "opcional"
+        string season "opcional"
         datetime createdAt
         datetime updatedAt
     }
@@ -39,19 +41,47 @@ flowchart LR
     PERSONA([Persona usuaria])
     CHAT([Consultar chatbot])
     PREGUNTAR([Preguntar por una prenda])
-    DATOS([Consultar materiales, creador o inspiración])
+    DATOS([Consultar materiales, colores, estilo, temporada, creador o inspiración])
     FUENTE([Consultar respuesta y fuente])
     SIN_EVIDENCIA([Recibir aviso si falta información])
     POSTGRES([Configurar catálogo PostgreSQL])
     GEMINI([Activar redacción opcional con Gemini])
+    HOME([Ver la cámara simulada y abrir el chat])
+    EXPLORAR([Seguir explorando con sugerencias])
 
     PERSONA --- CHAT
     CHAT --- PREGUNTAR
     CHAT --- DATOS
     CHAT --- FUENTE
     CHAT --- SIN_EVIDENCIA
+    CHAT --- EXPLORAR
+    PERSONA --- HOME
+    HOME --- CHAT
     POSTGRES --- CHAT
     GEMINI --- CHAT
+```
+
+## 2.1 Navegación y respuesta en vivo (fase 2)
+
+```mermaid
+sequenceDiagram
+    actor P as Persona
+    participant H as Home (cámara simulada)
+    participant C as Chat
+    participant B as Backend /api/v1/chat/stream
+    P->>H: abre la app
+    H-->>P: "detecta" una prenda de demostración
+    alt botón flotante
+        P->>C: abre el chat sin contexto
+    else Ver más información…
+        P->>C: abre el chat con la prenda detectada
+    end
+    P->>C: escribe una pregunta o toca una sugerencia
+    C->>B: POST { question }
+    B-->>C: meta (estado, prenda y fuentes)
+    B-->>C: delta (fragmentos del texto)
+    B-->>C: done (respuesta final)
+    C-->>P: texto en vivo, ficha de la prenda, fuente y nuevas sugerencias
 ```
 
 ## 3. Diagrama de máquina de estados de una consulta
