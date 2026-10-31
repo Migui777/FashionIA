@@ -20,6 +20,8 @@ const mockDress: Dress = {
   arEffectAssetUrl: null,
   arEffectIntensity: 0.7,
   story: "Historia del vestido.",
+  style: null,
+  season: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

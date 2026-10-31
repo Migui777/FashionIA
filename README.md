@@ -407,6 +407,15 @@ Luego `cd backend && npm install && npm run dev`. Nunca subas la key a git
   (materiales, creador o inspiración). Si falla o tarda más de 8 s se conserva
   la respuesta determinista. Código en `backend/src/chatbot/aiAnswer.ts`.
 
+- **`POST /api/v1/chat/stream`** (misma solicitud que `/api/v1/chat`): respuesta
+  en vivo como eventos SSE (`meta`, `delta`, `done`). El chat de la app usa este
+  endpoint. Con Gemini activo, el asistente responde preguntas abiertas
+  ("¿qué me recomiendas para el verano?", "¿qué prendas son verdes?") usando solo
+  el catálogo: prendas, materiales, colores, estilo, temporada, creador e
+  inspiración. Si el catálogo no alcanza, o Gemini no está activo, responde con
+  las reglas deterministas (que cubren una prenda y un campo por pregunta).
+  Código en `backend/src/chatbot/stream.ts`.
+
 Con `AI_PROVIDER=mock` (o sin `GEMINI_API_KEY`) todo funciona como antes, sin
 llamadas externas. Los tests (`npm test`) nunca llaman a Gemini.
 

@@ -19,13 +19,16 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 // Términos (sin acentos, en minúscula) que indican que la pregunta trata del catálogo.
 const CATALOG_TERMS =
-  /vestido|traje|prenda|catalogo|coleccion|material|tela|creador|disenad|inspir|autor/;
+  /vestido|traje|prenda|catalogo|coleccion|material|tela|creador|disenad|inspir|autor|color|tono|estilo|temporada|estacion|verano|invierno|otono|primavera|look|tendencia/;
 
 // Campo consultable: patrón sobre el texto normalizado y cómo se nombra si falta el dato.
 const FIELDS: Record<GarmentField, { pattern: RegExp; missing: string }> = {
   materials: { pattern: /material|tela|hech[oa]|confeccion|fabric/, missing: "sus materiales" },
   creator: { pattern: /creador|creado|creo\b|disenad|autor|quien/, missing: "su creador" },
   inspiration: { pattern: /inspir/, missing: "su inspiración" },
+  colors: { pattern: /colou?r|tono|paleta|cromatic/, missing: "sus colores" },
+  style: { pattern: /estilo|tendencia|silueta|corte|look|ocasion/, missing: "su estilo" },
+  season: { pattern: /temporada|estacion|epoca|verano|invierno|otono|primavera|clima/, missing: "su temporada" },
 };
 
 function normalize(text: string): string {
@@ -49,7 +52,7 @@ function lowerFirst(text: string): string {
   return text.charAt(0).toLowerCase() + text.slice(1);
 }
 
-function toGarment(record: CatalogRecord): Garment {
+export function toGarment(record: CatalogRecord): Garment {
   return {
     id: record.id,
     name: record.name,
@@ -57,6 +60,9 @@ function toGarment(record: CatalogRecord): Garment {
     creator: isMissing(record.creator) ? null : (record.creator as string),
     materials: isMissing(record.materials) ? null : [...(record.materials as string[])],
     inspiration: isMissing(record.inspiration) ? null : (record.inspiration as string),
+    colors: isMissing(record.colors) ? null : [...(record.colors as string[])],
+    style: isMissing(record.style) ? null : (record.style as string),
+    season: isMissing(record.season) ? null : (record.season as string),
   };
 }
 
@@ -103,6 +109,9 @@ function answerFor(field: GarmentField, record: CatalogRecord, catalog: Catalog)
   const subject = `El ${record.name}${catalog.mock ? " (dato de prueba)" : ""}`;
   if (field === "materials") return `${subject} está confeccionado en ${joinList(record.materials as string[])}.`;
   if (field === "creator") return `${subject} es una creación de ${record.creator}.`;
+  if (field === "colors") return `${subject} se presenta en ${joinList(record.colors as string[])}.`;
+  if (field === "style") return `${subject} es de estilo ${lowerFirst(record.style as string)}.`;
+  if (field === "season") return `${subject} está pensado para ${lowerFirst(record.season as string)}.`;
   if (catalog.storyAsInspiration) return `Sobre la inspiración del ${record.name}: ${record.inspiration}`;
   return `${subject} se inspira en ${lowerFirst(record.inspiration as string)}.`;
 }
@@ -183,7 +192,7 @@ export function handleChat(
     return reply(
       "answered",
       `El ${record.name}${catalog.mock ? " (dato de prueba)" : ""} es un ${record.type}. ` +
-        "Puedo contarte sus materiales, su creador o su inspiración.",
+        "Puedo contarte sus materiales, colores, estilo, temporada, creador o inspiración.",
       garment,
       [{ recordId: record.id, document: catalog.document, fields: ["name", "type"] }],
     );

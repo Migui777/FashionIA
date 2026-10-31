@@ -10,9 +10,12 @@ export interface Garment {
   id: string;
   name: string;
   type: string;
-  creator: string;
-  materials: string[];
-  inspiration: string;
+  creator: string | null;
+  materials: string[] | null;
+  inspiration: string | null;
+  colors?: string[] | null;
+  style?: string | null;
+  season?: string | null;
 }
 
 export interface ChatSource {

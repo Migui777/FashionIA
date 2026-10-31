@@ -30,6 +30,9 @@ export function dressToRecord(dress: Dress): CatalogRecord {
     creator: dress.designer,
     materials,
     inspiration: dress.story,
+    colors: (dress.color ?? "").split(/,| y | a /).map((c) => c.trim().toLowerCase()).filter(Boolean),
+    style: dress.style,
+    season: dress.season,
   };
 }
 

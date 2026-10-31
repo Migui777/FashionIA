@@ -5,7 +5,9 @@ import type { CatalogSource } from "../chatbot/catalog";
 import { detectRequestedField, handleChat } from "../chatbot/handler";
 import { createGeminiAnswerWriter, createGeminiFreeAnswerWriter, enhanceFreeResult, enhanceResult } from "../chatbot/aiAnswer";
 import type { AnswerWriter, FreeAnswerWriter } from "../chatbot/aiAnswer";
-import type { Catalog, ChatErrorBody, ChatErrorCode } from "../chatbot/contract";
+import type { Catalog, ChatErrorBody, ChatErrorCode, ChatSuccessBody } from "../chatbot/contract";
+import { NO_EVIDENCE_MARKER, createGeminiStreamWriter, firstChunk, resolveCatalogAnswer } from "../chatbot/stream";
+import type { StreamEvent, StreamWriter } from "../chatbot/stream";
 
 const MAX_BODY = "10kb";
 const WINDOW_MS = 60_000;
@@ -20,6 +22,8 @@ export interface ChatV1Options {
   answerWriter?: AnswerWriter | null;
   /** Redactor de preguntas abiertas. Por defecto: Gemini bajo la misma configuración que answerWriter. */
   freeAnswerWriter?: FreeAnswerWriter | null;
+  /** Redactor en vivo (POST /stream). Por defecto: Gemini bajo la misma configuración; null = respuesta determinista. */
+  streamWriter?: StreamWriter | null;
 }
 
 /**
@@ -34,6 +38,7 @@ export function createChatV1Router({
   rateLimitPerMinute = Number(process.env.RATE_LIMIT_PER_MINUTE ?? 20),
   answerWriter = createGeminiAnswerWriter(),
   freeAnswerWriter = createGeminiFreeAnswerWriter(),
+  streamWriter = createGeminiStreamWriter(),
 }: ChatV1Options = {}): Router {
   const router = Router();
   let counter = 0;
@@ -101,6 +106,94 @@ export function createChatV1Router({
         .status(503)
         .json(errorBody("UPSTREAM_UNAVAILABLE", "No se pudo consultar la fuente de datos. Intenta de nuevo más tarde.", requestId));
     }
+  });
+
+  /**
+   * POST /api/v1/chat/stream: misma solicitud, respuesta como eventos SSE
+   * (`meta`, `delta`*, `done`). Los errores de validación siguen siendo JSON.
+   */
+  router.post("/stream", async (req: Request, res: Response) => {
+    const requestId: string = res.locals.requestId;
+    let catalog: Catalog;
+    try {
+      catalog = await loadCatalog();
+    } catch (err) {
+      console.error(err);
+      return res
+        .status(503)
+        .json(errorBody("UPSTREAM_UNAVAILABLE", "No se pudo consultar la fuente de datos. Intenta de nuevo más tarde.", requestId));
+    }
+
+    const base = handleChat(req.body, { catalog, requestId });
+    if (base.statusCode !== 200) return res.status(base.statusCode).json(base.body);
+    const body = base.body as ChatSuccessBody;
+    const question = String(req.body.question).trim();
+
+    res.status(200).set({
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    });
+    res.flushHeaders();
+
+    let closed = false;
+    res.on("close", () => {
+      closed = true;
+    });
+    const send = (event: StreamEvent) => {
+      if (!closed) res.write(`data: ${JSON.stringify(event)}\n\n`);
+    };
+    const sendDeterministic = () => {
+      send({ type: "delta", text: body.answer });
+      send({ type: "done", status: body.status, answer: body.answer, garment: body.garment, sources: body.sources });
+    };
+
+    send({ type: "meta", requestId, status: body.status, garment: body.garment, sources: body.sources, meta: body.meta });
+
+    // La IA responde si la prenda se identificó con evidencia o si la pregunta es sobre el catálogo en general.
+    const useAI = streamWriter !== null && (body.status === "answered" || (body.status === "no_evidence" && body.garment === null));
+    if (!useAI) {
+      sendDeterministic();
+      return res.end();
+    }
+
+    let answer = "";
+    let flushed = false;
+    try {
+      const iterator = streamWriter({ question, catalog, garment: body.garment })[Symbol.asyncIterator]();
+      let step = await firstChunk(iterator);
+      while (!step.done && !closed) {
+        answer += step.value;
+        const head = answer.trimStart();
+        const maybeMarker = head.length < NO_EVIDENCE_MARKER.length && NO_EVIDENCE_MARKER.startsWith(head);
+        if (head.startsWith(NO_EVIDENCE_MARKER)) break;
+        if (flushed) send({ type: "delta", text: step.value });
+        else if (!maybeMarker) {
+          flushed = true;
+          send({ type: "delta", text: answer });
+        }
+        step = await iterator.next();
+      }
+      await iterator.return?.();
+    } catch (err) {
+      console.error("[AI] Falló la respuesta en vivo con Gemini:", err);
+    }
+
+    const text = answer.trim();
+    if (!flushed && text && !text.startsWith(NO_EVIDENCE_MARKER)) {
+      flushed = true;
+      send({ type: "delta", text: answer });
+    }
+    if (!flushed || !text) {
+      // Sin texto utilizable (IA apagada, falló antes de responder o declaró falta de evidencia).
+      sendDeterministic();
+    } else if (body.garment) {
+      send({ type: "done", status: "answered", answer: text, garment: body.garment, sources: body.sources });
+    } else {
+      send({ type: "done", answer: text, ...resolveCatalogAnswer(text, catalog) });
+    }
+    res.end();
   });
 
   // Errores del parser (JSON inválido o cuerpo demasiado grande) con el formato del contrato.

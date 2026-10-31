@@ -112,3 +112,21 @@ describe("handleChat (contrato v0.1)", () => {
     }
   });
 });
+
+describe("campos de colores, estilo y temporada", () => {
+  const ask = (question: string) => {
+    const result = handleChat({ question }, { catalog: loadCatalog(), requestId: "req_0001" });
+    return result.body as { status: string; answer: string; sources: { fields: string[] }[] };
+  };
+
+  it.each([
+    ["¿De qué colores es el Vestido Aurora de Jardín?", "colors", "rosa palo"],
+    ["¿Qué estilo tiene el Traje Bruma Andina?", "style", "sastrería"],
+    ["¿Para qué temporada es el Vestido Marea Serena?", "season", "verano"],
+  ])("%s", (question, field, expected) => {
+    const body = ask(question);
+    expect(body.status).toBe("answered");
+    expect(body.sources[0].fields).toEqual([field]);
+    expect(body.answer).toContain(expected);
+  });
+});

@@ -1,80 +1,110 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { dressService } from "../services/dressService";
-import { useAppStore } from "../store/useAppStore";
+import { DEMO_GARMENTS } from "../features/augmented-reality/demoGarments";
+import "../styles/atelier.css";
 
-type LoadState = "loading" | "ready" | "error";
+const FIRST_DETECTION_MS = 2600;
+const DETECTION_CYCLE_MS = 14000;
+const BANNER_VISIBLE_MS = 9000;
 
+const BOKEH = [
+  { top: "14%", left: "18%", size: 60, delay: 0 },
+  { top: "60%", left: "70%", size: 46, delay: 0.8 },
+  { top: "76%", left: "12%", size: 38, delay: 1.4 },
+  { top: "30%", left: "78%", size: 54, delay: 2 },
+];
+
+/**
+ * Home: cámara simulada. No pide la cámara real ni reconoce prendas; recorre
+ * prendas de demostración para mostrar el flujo "detectar → ver más información → chat".
+ * Cuando exista el reconocimiento real se reemplaza esta simulación.
+ */
 export function HomePage() {
   const navigate = useNavigate();
-  const setDresses = useAppStore((state) => state.setDresses);
-
-  const [loadState, setLoadState] = useState<LoadState>("loading");
-  const [cameraSupported, setCameraSupported] = useState(true);
-  const [pwaSupported, setPwaSupported] = useState(true);
+  // `index` conserva la última prenda para que el banner no cambie de texto mientras se oculta.
+  const [detection, setDetection] = useState({ index: 0, visible: false });
 
   useEffect(() => {
-    setCameraSupported(Boolean(navigator.mediaDevices?.getUserMedia));
-    setPwaSupported("serviceWorker" in navigator);
+    let cursor = 0;
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
-    dressService
-      .getAll()
-      .then((dresses) => {
-        setDresses(dresses);
-        setLoadState("ready");
-      })
-      .catch(() => setLoadState("error"));
-  }, [setDresses]);
+    const detect = () => {
+      setDetection({ index: cursor++ % DEMO_GARMENTS.length, visible: true });
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => setDetection((d) => ({ ...d, visible: false })), BANNER_VISIBLE_MS);
+    };
+
+    const first = setTimeout(detect, FIRST_DETECTION_MS);
+    const cycle = setInterval(detect, DETECTION_CYCLE_MS);
+    return () => {
+      clearTimeout(first);
+      clearInterval(cycle);
+      clearTimeout(hideTimer);
+    };
+  }, []);
+
+  const shown = DEMO_GARMENTS[detection.index];
+  const garment = detection.visible ? shown : null;
 
   return (
-    <div className="relative flex min-h-full flex-col items-center justify-between overflow-hidden bg-runway-black px-6 py-10 text-center">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-60"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 20%, rgba(212,175,122,0.18), transparent 55%), radial-gradient(circle at 20% 80%, rgba(232,201,201,0.1), transparent 50%)",
-        }}
-      />
-
-      <div className="relative z-10 mt-16 flex flex-col items-center gap-3 animate-fade-in-up">
-        <div className="h-14 w-14 rounded-full border border-runway-gold/50" />
-        <h1 className="text-shimmer font-display text-5xl tracking-wide">Fashion AR</h1>
-        <p className="max-w-xs text-sm text-runway-mist/60">
-          Realidad aumentada para vivir la pasarela desde tu cámara
-        </p>
-      </div>
-
-      <div className="relative z-10 flex flex-col items-center gap-4 animate-fade-in-up">
-        <div className="flex gap-4 text-xs text-runway-mist/50">
-          <StatusPill ok={cameraSupported} label="Cámara" />
-          <StatusPill ok={pwaSupported} label="PWA" />
-          <StatusPill ok={loadState !== "error"} label="Colección" />
+    <div className="at-root">
+      <div className="at-cam" aria-hidden="true">
+        {BOKEH.map((b) => (
+          <i
+            key={b.top}
+            className="at-bokeh"
+            style={{ top: b.top, left: b.left, width: b.size, height: b.size, animationDelay: `${b.delay}s` }}
+          />
+        ))}
+        <div className="at-frame">
+          <div className={`at-silhouette${garment ? " show" : ""}`} />
+          <b className="at-corner tl" />
+          <b className="at-corner tr" />
+          <b className="at-corner bl" />
+          <b className="at-corner br" />
+          <div className="at-scanline" />
         </div>
-
-        <button
-          onClick={() => navigate("/runway")}
-          disabled={loadState === "loading"}
-          className="rounded-full bg-runway-gold px-8 py-3.5 font-medium tracking-wide text-runway-black transition-transform active:scale-95 disabled:opacity-40"
-        >
-          {loadState === "loading" ? "Preparando experiencia..." : "Entrar a la pasarela"}
-        </button>
-
-        {loadState === "error" && (
-          <p className="max-w-xs text-xs text-red-400">
-            No pudimos conectar con el servidor. Puedes continuar, algunos vestidos podrían no
-            cargar.
-          </p>
-        )}
       </div>
-    </div>
-  );
-}
 
-function StatusPill({ ok, label }: { ok: boolean; label: string }) {
-  return (
-    <span className="flex items-center gap-1.5">
-      <span className={`h-1.5 w-1.5 rounded-full ${ok ? "bg-emerald-400" : "bg-red-400"}`} />
-      {label}
-    </span>
+      <div className="at-htop">
+        <div>
+          <h1 className="at-logo">Fashion-IA</h1>
+          <span className="at-sub">Pasarela · Modo demo</span>
+        </div>
+        <div className="at-rec">
+          <i />
+          SIMULACIÓN
+        </div>
+      </div>
+
+      <div className="at-status" role="status">
+        {garment ? "✦ Prenda identificada" : "Escaneando pasarela…"}
+      </div>
+
+      <div className={`at-banner${garment ? " show" : ""}`} aria-hidden={!garment}>
+        <div className="at-tag">
+          <i />
+          Prenda detectada
+        </div>
+        <h3>{shown.name}</h3>
+        <div className="at-by">
+          {shown.creator} · {shown.collection}
+        </div>
+        <p>{shown.summary}</p>
+        <button
+          type="button"
+          className="at-cta"
+          tabIndex={garment ? 0 : -1}
+          onClick={() => navigate("/chat", { state: { garment: shown.name } })}
+        >
+          Ver más información…
+        </button>
+      </div>
+
+      <button type="button" className="at-fab" aria-label="Abrir el chat" onClick={() => navigate("/chat")}>
+        {!garment && <small>Pregúntale a la IA</small>}
+        💬
+      </button>
+    </div>
   );
 }

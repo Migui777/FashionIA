@@ -19,6 +19,8 @@ const mockDress: Dress = {
   arEffectAssetUrl: "/effects/butterflies.glb",
   arEffectIntensity: 0.7,
   story: "story",
+  style: null,
+  season: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

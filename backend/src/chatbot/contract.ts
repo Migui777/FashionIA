@@ -6,7 +6,7 @@ export const OUT_OF_SCOPE_ANSWER =
   "¿Quieres saber de materiales, creador o inspiración de alguna prenda?";
 
 export type ChatStatus = "answered" | "no_evidence" | "out_of_scope";
-export type GarmentField = "materials" | "creator" | "inspiration";
+export type GarmentField = "materials" | "creator" | "inspiration" | "colors" | "style" | "season";
 
 export type ChatErrorCode =
   | "VALIDATION_ERROR"
@@ -23,6 +23,9 @@ export interface CatalogRecord {
   creator?: string | null;
   materials?: string[] | null;
   inspiration?: string | null;
+  colors?: string[] | null;
+  style?: string | null;
+  season?: string | null;
 }
 
 export interface Catalog {
@@ -41,6 +44,9 @@ export interface Garment {
   creator: string | null;
   materials: string[] | null;
   inspiration: string | null;
+  colors: string[] | null;
+  style: string | null;
+  season: string | null;
 }
 
 export interface Source {

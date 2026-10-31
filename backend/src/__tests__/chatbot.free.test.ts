@@ -76,7 +76,7 @@ describe("POST /api/v1/chat con respuesta libre de IA", () => {
     it("answerable=false responde no_evidence con la prenda y sin campos", async () => {
       const res = await ask(
         appWith(freeWriter({ answerable: false, answer: "inventado", fieldsUsed: ["name"] })),
-        "¿Qué color tiene el Vestido Aurora de Jardín?",
+        "¿Es cómodo el Vestido Aurora de Jardín?",
       );
       expect(res.status).toBe(200);
       expect(res.body.status).toBe("no_evidence");

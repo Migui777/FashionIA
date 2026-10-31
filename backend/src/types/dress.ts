@@ -15,6 +15,8 @@ export interface Dress {
   arEffectAssetUrl: string | null;
   arEffectIntensity: number;
   story: string | null;
+  style: string | null;
+  season: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
