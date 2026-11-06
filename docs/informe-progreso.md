@@ -5,6 +5,7 @@
 **Producto:** Fashion-IA / Fashion AR Runway  
 **Módulo evaluado:** Chatbot de catálogo  
 **Equipo de desarrollo del período informado:** PM Michael Zuleta · Backend Dario Borja · Frontend Juan Henao
+**Equipo de desarrollo del período informado - FASE 3:** PM Miguel Ángel Muñoz Sosa · Backend Brayan Rojas · Frontend Wudeison Tovar
 
 > Este informe reúne evidencia comprobable del código, las pruebas, una consulta funcional y las tarjetas visibles de Trello, además de la planificación de capacidad del equipo para una semana de trabajo. La distribución por persona-días representa el plan de trabajo y no un registro horario individual.
 
