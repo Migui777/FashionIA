@@ -1,10 +1,10 @@
 # Informe de progreso | Fashion-IA — Chatbot de moda
 
-**Fecha de corte (fase 1):** 17 de octubre de 2026  
-**Actualización de la fase 3:** 30 de octubre de 2026 (ver sección 1.1)  
+**Fecha de corte (fase 1 y 2):** 17 de octubre de 2026  
+**Actualización de la fase 3:** 7 de novimebre de 2026 (ver sección 1.1)  
 **Producto:** Fashion-IA / Fashion AR Runway  
 **Módulo evaluado:** Chatbot de catálogo  
-**Equipo de desarrollo del período informado:** PM Michael Zuleta · Backend Dario Borja · Frontend Juan Henao
+**Equipo de desarrollo del período 1 y 2:** PM Michael Zuleta · Backend Dario Borja · Frontend Juan Henao
 **Equipo de desarrollo del período informado - FASE 3:** PM Miguel Ángel Muñoz Sosa · Backend Brayan Rojas · Frontend Wudeison Tovar
 
 > Este informe reúne evidencia comprobable del código, las pruebas, una consulta funcional y las tarjetas visibles de Trello, además de la planificación de capacidad del equipo para una semana de trabajo. La distribución por persona-días representa el plan de trabajo y no un registro horario individual.
@@ -17,7 +17,7 @@ El módulo de chatbot cuenta con una interfaz web funcional conectada a un endpo
 
 La respuesta es determinista por defecto. Gemini puede redactar con datos recuperados, pero no sustituye la fuente de verdad y el backend conserva la respuesta base si la redacción falla.
 
-### 1.1 Actualización de la fase 3 (30 de octubre de 2026)
+### 1.1 Actualización de la fase 3 (7 de noviembre de 2026)
 
 La fase 3 mejora la interfaz y amplía el conocimiento del chatbot. El Home con
 cámara simulada, el chat rediseñado, la respuesta en vivo y el catálogo con
@@ -31,7 +31,7 @@ colores, estilo y temporada ya están implementados y probados con el catálogo 
 | Backend | Brayan Rojas | Campos de colores, estilo y temporada; respuesta en vivo (`POST /api/v1/chat/stream`); Gemini sobre el catálogo completo; migración de PostgreSQL |
 | Frontend | Wudeison Tovar | Home con cámara simulada, botón flotante, tarjeta de prenda detectada, chat rediseñado, sugerencias, emojis y animaciones |
 
-**Lista de actividades de la fase 2**
+**Lista de actividades de la fase 3**
 
 | Actividad | Responsable | Estado |
 |---|---|---|
@@ -47,7 +47,7 @@ colores, estilo y temporada ya están implementados y probados con el catálogo 
 | Cámara real y reconocimiento visual de prendas | Por definir | Pendiente |
 | Documento oficial y datos reales en PostgreSQL | PM / Backend | Pendiente |
 
-**Validación técnica de la fase 2**
+**Validación técnica de la fase 3**
 
 | Comprobación | Resultado |
 |---|---|
@@ -168,10 +168,10 @@ Los responsables se muestran por **función del equipo** y según la distribuci�
 
 | Área / función | Estado | Avance observado |
 |---|---|---|
-| **PM — Michael Zuleta** | En curso | Definición y priorización del módulo; documentación de alcance y siguiente etapa preparada. Trello revisado; se actualizaron estados y comentarios de avance, con las tareas dependientes de la fuente real mantenidas abiertas. |
-| **Backend — Dario Borja** | Funcional para demo | Contrato `POST /api/v1/chat`, validación, carga de catálogo mock y DB opcional, lógica determinista, estados de negocio, referencias de fuente, límites y fallback de Gemini. Tests automatizados aprobados. |
-| **Frontend — Juan Henao** | Funcional para demo | Interfaz conversacional, envío de preguntas, indicador de carga, respuesta y ficha de prenda conectados al endpoint. Flujo conversacional validado manualmente. |
-| **Integración AR y chatbot** | Parcial (fase 2) | La simulación del Home abre el chat con la prenda "detectada". El paso desde la cámara real y el reconocimiento visual siguen pendientes. |
+| **PM — Miguel Ángel Muñoz** | En curso | Definición y priorización del módulo; documentación de alcance y siguiente etapa preparada. Trello revisado; se actualizaron estados y comentarios de avance, con las tareas dependientes de la fuente real mantenidas abiertas. |
+| **Backend — Brayan Steven Rojas** | Funcional para demo | Contrato `POST /api/v1/chat`, validación, carga de catálogo mock y DB opcional, lógica determinista, estados de negocio, referencias de fuente, límites y fallback de Gemini. Tests automatizados aprobados. |
+| **Frontend — Wudeison Tovar** | Funcional para demo | Interfaz conversacional, envío de preguntas, indicador de carga, respuesta y ficha de prenda conectados al endpoint. Flujo conversacional validado manualmente. |
+| **Integración AR y chatbot** | Parcial (fase 3) | La simulación del Home abre el chat con la prenda "detectada". El paso desde la cámara real y el reconocimiento visual siguen pendientes. |
 | **Conocimiento documental** | Pendiente | No se ha conectado el documento de referencia ni implementado extracción, indexación o recuperación de fragmentos. |
 
 

@@ -15,7 +15,7 @@ El chatbot funciona hoy con un catálogo de prueba y una interfaz web propia (Ho
 
 ## 2. Equipo y responsabilidades
 
-### Fase 1 — MVP del chatbot
+### Fase 1 y 2 — MVP del chatbot
 
 | Responsabilidad | Integrante |
 |---|---|
@@ -27,12 +27,12 @@ El chatbot funciona hoy con un catálogo de prueba y una interfaz web propia (Ho
 
 | Responsabilidad | Integrante |
 |---|---|
-| Product Manager (PM) | **Miguel Ángel Muñoz Sosa**: lista de actividades, división de responsabilidades y autor del mockup actualizado de la interfaz |
+| Product Manager (PM) | **Miguel Ángel Muñoz**: lista de actividades, división de responsabilidades y autor del mockup actualizado de la interfaz |
 | Backend | **Brayan Rojas**: catálogo con colores, estilo y temporada, y endpoint de respuesta en vivo |
 | Frontend | **Wudeison Tovar**: Home con cámara simulada, botón flotante y chat rediseñado |
 
 Los tres integrantes se incorporaron el 22 de octubre de 2026 con una sesión de
-**2 horas** de socialización del proyecto. El trabajo de la fase 2 se registra
+**2 horas** de socialización del proyecto. El trabajo de la fase 3 se registra
 en el [informe de progreso](./informe-progreso.md).
 
 ## 3. Alcance del producto y estado actual
@@ -173,12 +173,10 @@ flowchart LR
 
 ### Todavía no hace
 
-- Leer automáticamente PDF, Word, páginas web u otros documentos de referencia.
 - Responder de forma fiable sobre datos que no estén en el catálogo conectado.
-- Reconocer una prenda real a partir de una imagen o video; la detección del Home es una simulación con prendas de demostración.
+- Reconocer una prenda real a partir de una imagen o video; la detección del Home es una simulación con prendas de demostración. (Esto lo realizará cuando se integre el trabajo con los demás equipos)
 - Responder preguntas abiertas sin Gemini: las reglas deterministas cubren una prenda y un campo por pregunta.
 - Mantener memoria entre mensajes o usuarios; el historial visible es local a la interfaz.
-- Resolver preguntas generales ajenas a las prendas.
 - Identificar páginas o párrafos de una fuente documental externa; `sources` identifica el registro y los campos usados.
 
 ## 8. Contrato de la API
