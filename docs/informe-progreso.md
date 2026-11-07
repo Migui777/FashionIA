@@ -168,7 +168,7 @@ Los responsables se muestran por **función del equipo** y según la distribuci�
 
 | Área / función | Estado | Avance observado |
 |---|---|---|
-| **PM — Miguel Ángel Muñoz** | En curso | Definición y priorización del módulo; documentación de alcance y siguiente etapa preparada. Trello revisado; se actualizaron estados y comentarios de avance, con las tareas dependientes de la fuente real mantenidas abiertas. |
+| **PM — Miguel Ángel Muñoz** | En curso | Definición y priorización del módulo; documentación de alcance y siguiente etapa preparada. Trello revisado; se actualizaron estados y comentarios de avance, con las tareas dependientes de la fuente real mantenidas abiertas. Adicional a ello, se redefinió el estilo delm mockup, alineándolo a una correcta experiencia de usuario final |
 | **Backend — Brayan Steven Rojas** | Funcional para demo | Contrato `POST /api/v1/chat`, validación, carga de catálogo mock y DB opcional, lógica determinista, estados de negocio, referencias de fuente, límites y fallback de Gemini. Tests automatizados aprobados. |
 | **Frontend — Wudeison Tovar** | Funcional para demo | Interfaz conversacional, envío de preguntas, indicador de carga, respuesta y ficha de prenda conectados al endpoint. Flujo conversacional validado manualmente. |
 | **Integración AR y chatbot** | Parcial (fase 3) | La simulación del Home abre el chat con la prenda "detectada". El paso desde la cámara real y el reconocimiento visual siguen pendientes. |
